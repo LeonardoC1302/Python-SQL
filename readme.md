@@ -14,4 +14,4 @@
 - The last commit in git should be on May 11 at midnight
 
 # Requirements
-- 
+- pip install customtkinter
