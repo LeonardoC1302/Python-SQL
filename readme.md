@@ -1,3 +1,4 @@
+# TASKS
 - The solutions architect needs you to design the way in which the programs will interact with the database, defining the necessary layers to access and work with it from the applications
 
 - To do this, you will have to try two forms of interconnectivity, the first, make a client-server access from an application programmed in the language of your choice, for example .net, java, go, python, etc., one that allows you to build a UI and that exists a native driver, jdbc, ado.net and ultimately odbc. Choose one of the following screens to carry out your test program: a) check the waste that a collector transporter is going to take from a waste producer, exchanging the respective containers b) record the sales of recycled products by assigning respective amounts according to contracts (validate the mockup of the selected screen with the design of the database and the teacher)
@@ -11,3 +12,6 @@
 - 15 extra points will be given if you implement and measure another endpoint using an ORM
 
 - The last commit in git should be on May 11 at midnight
+
+# Requirements
+- 
