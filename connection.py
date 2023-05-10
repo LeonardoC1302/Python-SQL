@@ -15,11 +15,13 @@ class FloatSpinbox(ctk.CTkFrame):
                  height: int = 32,
                  step_size: Union[int, float] = 1,
                  command: Callable = None,
+                 product: tuple = None,
                  **kwargs):
         super().__init__(*args, width=width, height=height, **kwargs)
 
         self.step_size = step_size
         self.command = command
+        self.product = product
 
         self.configure(fg_color=("gray78", "gray28"))  # set frame color
 
@@ -41,6 +43,7 @@ class FloatSpinbox(ctk.CTkFrame):
         self.entry.insert(0, "0.0")
 
     def add_button_callback(self):
+        # print(self.products)
         if self.command is not None:
             self.command()
         try:
@@ -48,6 +51,9 @@ class FloatSpinbox(ctk.CTkFrame):
             if value >= 0:  # check that value is positive
                 self.entry.delete(0, "end")
                 self.entry.insert(0, value)
+                app.price = app.price + self.product[2]
+                newPrice = "Total Price: ₡" + str(app.price)
+                app.textPrice.set(newPrice) # Total price of products
         except ValueError:
             return
 
@@ -59,6 +65,9 @@ class FloatSpinbox(ctk.CTkFrame):
             if value >= 0:  # check that value is positive
                 self.entry.delete(0, "end")
                 self.entry.insert(0, value)
+                app.price = app.price - self.product[2]
+                newPrice = "Total Price: ₡" + str(app.price)
+                app.textPrice.set(newPrice) # Total price of products
         except ValueError:
             return
 
@@ -87,6 +96,8 @@ class App(ctk.CTk):
         self.rowconfigure(1, weight=1)
 
         self.infoSection = None # Section for info
+        self.price = 0 # Total price of products
+        self.textPrice = tk.StringVar(value="Total Price: ₡" + str(self.price)) # Total price of products
 
         # Window main label (Title)
         textTitle = tk.StringVar(value="Buy Your Products")
@@ -95,7 +106,6 @@ class App(ctk.CTk):
                                 width=10,
                                 height=1,
                                 fg_color="transparent",
-                                # text_color=("black", "white"),
                                 font=("Arial", 30, "bold"),
                                 corner_radius=8)
         labelTitle.grid(row=0, column=0, columnspan=2, sticky="nsew", padx=10, pady=10)
@@ -110,19 +120,28 @@ class App(ctk.CTk):
 
         ## Select Quantity of products
         scrollFrameQuantity = ctk.CTkScrollableFrame(self,
-                            label_text="Select Your Quantity")
+                            label_text="Select Your Products")
         scrollFrameQuantity.grid(row=1, column=1, sticky="nsew", padx=10, pady=10)
         scrollFrameQuantity.grid_columnconfigure(0, weight=1)
         scrollFrameQuantity.grid_columnconfigure(1, weight=1)
 
         spinboxesP = []
         for i in range(len(products)-1):
-            spinbox = FloatSpinbox(scrollFrameQuantity, width=150, step_size=1, )
+            spinbox = FloatSpinbox(scrollFrameQuantity, width=150, step_size=1, product=products[i])
             spinboxesP.append(spinbox)
             spinbox.grid(row=i, column=1, padx=10, pady=(0, 20), sticky="w")
             spinboxLabel = ctk.CTkLabel(scrollFrameQuantity, text=products[i][1])
             spinboxLabel.grid(row=i, column=0, padx=10, pady=(0, 20), sticky="e")
 
+        ## Price Label
+        priceLabel = ctk.CTkLabel(self,
+                                textvariable=self.textPrice,
+                                width=10,
+                                height=1,
+                                fg_color="transparent",
+                                font=("Arial", 30, "bold"),
+                                corner_radius=8)
+        priceLabel.grid(row=3, column=1, sticky="nsew", padx=10, pady=10)
         ## Submit button
         buttonSubmit = ctk.CTkButton(self,
                                     fg_color="transparent",
@@ -130,8 +149,9 @@ class App(ctk.CTk):
                                     text_color=("gray10", "#DCE4EE"),
                                     corner_radius=30,
                                     text="Submit Order",
-                                    command=lambda:self.placeOrder(products, spinboxesP))
-        buttonSubmit.grid(row=3, column=1, sticky="nsew", padx=10, pady=10)
+                                    command=lambda:print(self.textPrice))
+                                    # command=lambda:self.placeOrder(products, spinboxesP))
+        buttonSubmit.grid(row=4, column=1, sticky="nsew", padx=10, pady=10)
 
         ## CheckInfo button
         buttonInfo = ctk.CTkButton(self,
@@ -141,7 +161,7 @@ class App(ctk.CTk):
                                     corner_radius=30,
                                     text="Check Information",
                                     command=self.checkInfo)
-        buttonInfo.grid(row=3, column=0, sticky="nsew", padx=10, pady=10)
+        buttonInfo.grid(row=4, column=0, sticky="nsew", padx=10, pady=10)
     # Place Order
     def placeOrder(self, products, quantities):
         for quantity in quantities:
