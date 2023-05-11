@@ -15,3 +15,4 @@
 
 # Requirements
 - pip install customtkinter
+- pip install sqlalchemy pyodbc
