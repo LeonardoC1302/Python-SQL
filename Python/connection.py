@@ -111,8 +111,8 @@ class App(ctk.CTk):
         labelTitle.grid(row=0, column=0, columnspan=2, sticky="nsew", padx=10, pady=10)
         
         # Add side image
-        sideImage = ctk.CTkImage(light_image=img.open("img/darkImg.png"),
-                                dark_image=img.open("img/darkImg.png"),
+        sideImage = ctk.CTkImage(light_image=img.open("Python/img/darkImg.png"),
+                                dark_image=img.open("Python/img/darkImg.png"),
                                 size=(200, 200))
 
         button = ctk.CTkButton(self, image=sideImage, text="", fg_color="transparent", bg_color="transparent", state="disabled")
