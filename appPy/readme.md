@@ -17,6 +17,9 @@
 - pip install customtkinter
 - pip install sqlalchemy pyodbc
 - pip install geoalchemy2
+- pip install pymysql
+- pip install flask
+- pip install flask_sqlalchemy
 
 # Stored Procedure
 CREATE PROCEDURE GetWasteMovementsByQuantity
