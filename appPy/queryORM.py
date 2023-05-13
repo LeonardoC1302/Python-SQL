@@ -15,16 +15,13 @@ def getWastesQuantity (quantity):
     
     result = session.execute(query)
 
-    # Crear lista vacia
     resultDict = []
 
-    # Recorrer el resultado y agregarlo a la lista como diccionario para JSON
     for res in result:
-        # Se crea el diccionario con el nombre. 
-        # "name" es el nombre de la columna en la tabla y res[0] el valor
-        resultDict.append({"name": res[0]})
+
+        resultDict.append({"posttime": res[0], "quantity": res[1], "containerName": res[2], "wasteName": res[3], "typeName": res[4], "producerName": res[5], "countryName": res[6]})
 
     return resultDict
 
-# print("Query executed successfully")
-getWastesQuantity(900)
+selected = getWastesQuantity(900)
+print(selected)

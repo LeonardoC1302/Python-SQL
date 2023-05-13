@@ -6,6 +6,8 @@ from sqlalchemy.pool import NullPool
 def createConnection(pool):
     username = "root"
     password = "123456"
+    # username = "frank"
+    # password = "frank"
     server = "localhost"
     port = "1433"
     db = "caso3"
