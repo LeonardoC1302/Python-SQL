@@ -35,7 +35,7 @@ def getWastesQuantity (quantity):
 
     with open('results.json', 'w') as f:
         f.write(jsonResult)
-
+    session.close()
     return jsonResult
 
 def run_orm(quantity, threadsAmount):
@@ -51,9 +51,13 @@ def run_orm(quantity, threadsAmount):
         print(f"Execution time: {execution_time*1000:.2f} milliseconds")
     return total_time
 
-quantity = int(input("Ingrese la cantidad deseada: "))
-threadsAmount = int(input("Ingrese la cantidad de hilos: "))
-
-runOrm = run_orm(quantity, threadsAmount)
-average_time = runOrm / threadsAmount
-print(f"\n ---> Average execution time: {average_time*1000:.2f} milliseconds <---")
+quantity = 0
+threadsAmount = 0
+try:
+    quantity = int(input("Ingrese la cantidad deseada: "))
+    threadsAmount = int(input("Ingrese la cantidad de hilos: "))
+    runOrm = run_orm(quantity, threadsAmount)
+    average_time = runOrm / threadsAmount
+    print(f"\n ---> Average execution time: {average_time*1000:.2f} milliseconds <---")
+except:
+    print("Ingrese una entrada numérica")
