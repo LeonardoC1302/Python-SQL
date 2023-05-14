@@ -26,15 +26,6 @@ def getWastesQuantity (quantity):
     
     result = session.execute(query)
 
-    # resultDict = []
-
-    # for res in result:
-    #     resultDict.append({"posttime": res[0], "quantity": res[1], "containerName": res[2], "wasteName": res[3], "typeName": res[4], "producerName": res[5], "countryName": res[6]})
-
-    # jsonResult = json.dumps(resultDict, cls=CustomEncoder)
-    # with open('results.json', 'w') as f:
-    #     f.write(jsonResult)
-
     resultDict = {}
 
     for idx, res in enumerate(result):
