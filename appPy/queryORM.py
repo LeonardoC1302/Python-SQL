@@ -5,6 +5,9 @@ from sqlalchemy.orm import sessionmaker
 import json
 from datetime import date
 
+import time
+import threading
+
 class CustomEncoder(json.JSONEncoder):
     def default(self, obj):
         if isinstance(obj, date):
@@ -44,4 +47,22 @@ def getWastesQuantity (quantity):
 
     return jsonResult
 
-selected = getWastesQuantity(900)
+def run_orm(quantity, threadsAmount):
+    total_time = 0
+    for i in range(threadsAmount):
+        start_time = time.time()
+        t = threading.Thread(target=getWastesQuantity, args=(quantity,))
+        t.start()
+        t.join()
+        end_time = time.time()
+        execution_time = end_time - start_time
+        total_time += execution_time
+        print(f"Execution time: {execution_time*1000} milliseconds")
+    return total_time
+
+quantity = int(input("Ingrese la cantidad deseada: "))
+threadsAmount = int(input("Ingrese la cantidad de hilos: "))
+
+runOrm = run_orm(quantity, threadsAmount)
+average_time = runOrm / threadsAmount
+print(f"\n ---> Average execution time: {average_time*1000} milliseconds <---")

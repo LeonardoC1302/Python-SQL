@@ -259,7 +259,6 @@ queries = [
 procedure = """
     IF NOT EXISTS (SELECT * FROM sys.objects WHERE type = 'P' AND OBJECT_ID = OBJECT_ID('dbo.registerSales'))
 BEGIN
-    EXEC('
     CREATE PROCEDURE [dbo].[registerSales] 
         @client INT,
         @product INT,
@@ -302,7 +301,6 @@ BEGIN
             INNER JOIN collectors ON contractCollectors.collectorId = collectors.collectorId
             WHERE contracts.contractId = @contract;
     END;
-    ');
 END;
 """
 execProc = """
