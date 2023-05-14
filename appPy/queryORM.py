@@ -57,7 +57,7 @@ def run_orm(quantity, threadsAmount):
         end_time = time.time()
         execution_time = end_time - start_time
         total_time += execution_time
-        print(f"Execution time: {execution_time*1000} milliseconds")
+        print(f"Execution time: {execution_time*1000:.2f} milliseconds")
     return total_time
 
 quantity = int(input("Ingrese la cantidad deseada: "))
@@ -65,4 +65,4 @@ threadsAmount = int(input("Ingrese la cantidad de hilos: "))
 
 runOrm = run_orm(quantity, threadsAmount)
 average_time = runOrm / threadsAmount
-print(f"\n ---> Average execution time: {average_time*1000} milliseconds <---")
+print(f"\n ---> Average execution time: {average_time*1000:.2f} milliseconds <---")
