@@ -2,6 +2,15 @@ from tables import db, WasteMovement, Waste, WasteType, Address, Country, Contai
 from WasteMovementQuery import createConnection
 from sqlalchemy import select
 from sqlalchemy.orm import sessionmaker
+import json
+from datetime import date
+
+class CustomEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, date):
+            return obj.isoformat()
+        return super().default(obj)
+
 
 # Obtener los colectores de un pais usando ORM
 def getWastesQuantity (quantity):
@@ -10,18 +19,29 @@ def getWastesQuantity (quantity):
     Session = sessionmaker(bind=engine)
     session = Session()
 
-    # query = select(Collector.name).select_from(Collector).join(Office).join(Address).join(Country).where(Country.name == quantity)
     query = select(WasteMovement.posttime, WasteMovement.quantity, Container.containerName, Waste.wasteName, WasteType.typeName, Producer.producerName, Country.countryName).select_from(WasteMovement).join(Waste).join(WasteType).join(Address).join(Country).join(Container).join(ContainerType).join(ProducerXMovement).join(Producer).where(WasteMovement.quantity > quantity).order_by(WasteMovement.quantity.desc())
     
     result = session.execute(query)
 
-    resultDict = []
+    # resultDict = []
 
-    for res in result:
+    # for res in result:
+    #     resultDict.append({"posttime": res[0], "quantity": res[1], "containerName": res[2], "wasteName": res[3], "typeName": res[4], "producerName": res[5], "countryName": res[6]})
 
-        resultDict.append({"posttime": res[0], "quantity": res[1], "containerName": res[2], "wasteName": res[3], "typeName": res[4], "producerName": res[5], "countryName": res[6]})
+    # jsonResult = json.dumps(resultDict, cls=CustomEncoder)
+    # with open('results.json', 'w') as f:
+    #     f.write(jsonResult)
 
-    return resultDict
+    resultDict = {}
+
+    for idx, res in enumerate(result):
+        resultDict[idx] = {"posttime": res[0], "quantity": res[1], "containerName": res[2], "wasteName": res[3], "typeName": res[4], "producerName": res[5], "countryName": res[6]}
+
+    jsonResult = json.dumps(resultDict, cls=CustomEncoder)
+
+    with open('results.json', 'w') as f:
+        f.write(jsonResult)
+
+    return jsonResult
 
 selected = getWastesQuantity(900)
-print(selected)
