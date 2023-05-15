@@ -26,17 +26,19 @@ def getWastesQuantity (quantity):
     
     result = session.execute(query)
 
-    resultDict = {}
+    resultDict = []
+    resultInfo = {}
 
     for idx, res in enumerate(result):
-        resultDict[idx] = {"posttime": res[0], "quantity": res[1], "containerName": res[2], "wasteName": res[3], "typeName": res[4], "producerName": res[5], "countryName": res[6]}
+        resultInfo[idx] = {"posttime": res[0], "quantity": res[1], "containerName": res[2], "wasteName": res[3], "typeName": res[4], "producerName": res[5], "countryName": res[6]}
+        resultDict.append(resultInfo[idx])
 
-    jsonResult = json.dumps(resultDict, cls=CustomEncoder)
+    jsonResult = json.dumps(resultInfo, cls=CustomEncoder)
 
     with open('results.json', 'w') as f:
         f.write(jsonResult)
     session.close()
-    return jsonResult
+    return resultDict
 
 def run_orm(quantity, threadsAmount):
     total_time = 0
@@ -50,14 +52,3 @@ def run_orm(quantity, threadsAmount):
         total_time += execution_time
         print(f"Execution time: {execution_time*1000:.2f} milliseconds")
     return total_time
-
-# quantity = 0
-# threadsAmount = 0
-# try:
-#     quantity = int(input("Ingrese la cantidad deseada: "))
-#     threadsAmount = int(input("Ingrese la cantidad de hilos: "))
-#     runOrm = run_orm(quantity, threadsAmount)
-#     average_time = runOrm / threadsAmount
-#     print(f"\n ---> Average execution time: {average_time*1000:.2f} milliseconds <---")
-# except:
-#     print("Ingrese una entrada numérica")
