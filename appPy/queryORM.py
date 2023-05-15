@@ -51,13 +51,13 @@ def run_orm(quantity, threadsAmount):
         print(f"Execution time: {execution_time*1000:.2f} milliseconds")
     return total_time
 
-quantity = 0
-threadsAmount = 0
-try:
-    quantity = int(input("Ingrese la cantidad deseada: "))
-    threadsAmount = int(input("Ingrese la cantidad de hilos: "))
-    runOrm = run_orm(quantity, threadsAmount)
-    average_time = runOrm / threadsAmount
-    print(f"\n ---> Average execution time: {average_time*1000:.2f} milliseconds <---")
-except:
-    print("Ingrese una entrada numérica")
+# quantity = 0
+# threadsAmount = 0
+# try:
+#     quantity = int(input("Ingrese la cantidad deseada: "))
+#     threadsAmount = int(input("Ingrese la cantidad de hilos: "))
+#     runOrm = run_orm(quantity, threadsAmount)
+#     average_time = runOrm / threadsAmount
+#     print(f"\n ---> Average execution time: {average_time*1000:.2f} milliseconds <---")
+# except:
+#     print("Ingrese una entrada numérica")
