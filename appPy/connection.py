@@ -1,6 +1,7 @@
 import pyodbc
 import tkinter as tk
 import tkinter.messagebox
+from tkinter import messagebox
 import customtkinter as ctk
 from PIL import Image as img
 from typing import Union, Callable
@@ -111,8 +112,8 @@ class App(ctk.CTk):
         labelTitle.grid(row=0, column=0, columnspan=2, sticky="nsew", padx=10, pady=10)
         
         # Add side image
-        sideImage = ctk.CTkImage(light_image=img.open("Python/img/darkImg.png"),
-                                dark_image=img.open("Python/img/darkImg.png"),
+        sideImage = ctk.CTkImage(light_image=img.open("appPy/img/darkImg.png"),
+                                dark_image=img.open("appPy/img/darkImg.png"),
                                 size=(200, 200))
 
         button = ctk.CTkButton(self, image=sideImage, text="", fg_color="transparent", bg_color="transparent", state="disabled")
@@ -149,8 +150,8 @@ class App(ctk.CTk):
                                     text_color=("gray10", "#DCE4EE"),
                                     corner_radius=30,
                                     text="Submit Order",
-                                    command=lambda:print(self.textPrice))
-                                    # command=lambda:self.placeOrder(products, spinboxesP))
+                                    # command=lambda:print(self.textPrice))
+                                    command=lambda:self.placeOrder(products, spinboxesP))
         buttonSubmit.grid(row=4, column=1, sticky="nsew", padx=10, pady=10)
 
         ## CheckInfo button
@@ -163,12 +164,44 @@ class App(ctk.CTk):
                                     command=self.checkInfo)
         buttonInfo.grid(row=4, column=0, sticky="nsew", padx=10, pady=10)
     # Place Order
+    def showSummary(self, saleProducts):
+        summary = "Sale Summary:\n\n"
+        total_price = 0
+        
+        for product in saleProducts:
+            product_name = str(product[0])
+            product_price = str(product[1])
+            available = product[2]
+            
+            if available:
+                summary += f"Product: {product_name:15} Price: ₡{product_price:>10}\n"
+                total_price += product[1]
+            else:
+                summary += f"Product: {product_name:15} Not Available\n"
+        
+        summary += "\n" + "=" * 30 + "\n"
+        summary += f"Total Price: ₡{total_price:>10}"
+        
+        messagebox.showinfo("Sale Summary", summary)
+
     def placeOrder(self, products, quantities):
+        saleProducts = []
         for quantity in quantities:
-            product = products[quantities.index(quantity)]
-            productId = product[0]
-            totalPrice = float(str(product[2])) * quantity.get()
-            data = executeQuery(connection, execProc, [productId, totalPrice], 1)
+            q =  int(quantity.get())
+            if (q>0):
+                product = products[quantities.index(quantity)]
+                # print(product[1], quantity.get());
+                productId = product[0]
+                totalPrice = float(str(product[2])) * quantity.get()
+
+                queryAvailable = "Select top 1 inventoryProduct.quantity FROM inventoryProduct WHERE productId = ?"
+                available = executeQuery(connection, queryAvailable, [productId], 0)
+                if (available[0][0] >= q):
+                    data = executeQuery(connection, execProc, [productId, totalPrice, q], 1)
+                    saleProducts.append([product[1], totalPrice, True])
+                else:
+                    saleProducts.append([product[1], 0, False])
+        self.showSummary(saleProducts)
 
     # Check Info
     def checkInfo(self):
@@ -213,21 +246,21 @@ def executeQuery(cnxn, query, params, proc):
     cursor = cnxn.cursor()
     try:
         if params == [] and proc:
-            print("executing proc")
+            # print("executing proc")
             cursor.execute(query)
             connection.commit()
             return
         elif params == [] and not proc:
-            print("executing query")
+            # print("executing query")
             cursor.execute(query)
             return cursor.fetchall()
         if params != [] and proc:
-            print("executing proc with params")
+            # print("executing proc with params")
             cursor.execute(query, params)
             connection.commit()
             return
         else:
-            print("executing query with params")
+            # print("executing query with params")
             cursor.execute(query, params)
             return cursor.fetchall()
     except Exception as e:
@@ -257,24 +290,30 @@ queries = [
 
 #Execute Queries
 procedure = """
-    IF NOT EXISTS (SELECT * FROM sys.objects WHERE type = 'P' AND OBJECT_ID = OBJECT_ID('dbo.registerSales'))
-BEGIN
-    CREATE PROCEDURE [dbo].[registerSales] 
+alter PROCEDURE [dbo].[registerSales] 
         @client INT,
         @product INT,
         @seller INT,
         @totalPrice DECIMAL(12,2),
         @paymentType INT,
-        @contract INT
+        @contract INT,
+		@quantity INT
     AS
     BEGIN 
 
         DECLARE @sellerPercentage decimal(5,2);
         DECLARE @producerPercentage decimal(5,2);
         DECLARE @collectorPercentage decimal(5,2);
+		DECLARE @availableStock int;
 
-        INSERT INTO [dbo].[sales]([clientId], [productId], [sellerId], [totalPrice], [posttime], [checksum], [paymentTypeId], [contractId]) VALUES
-            (@client, @product, @seller, @totalPrice, GETDATE(), NULL, @paymentType, @contract);
+		set @availableStock = (Select top 1 inventoryProduct.quantity FROM inventoryProduct WHERE productId = @product);
+
+		IF(@availableStock >= @quantity) 
+		BEGIN
+			UPDATE inventoryProduct SET quantity = quantity - @quantity WHERE productId = @product; 
+
+        INSERT INTO [dbo].[sales]([clientId], [productId], [sellerId], [totalPrice], [posttime], [checksum], [paymentTypeId], [contractId], [quantity]) VALUES
+            (@client, @product, @seller, @totalPrice, GETDATE(), NULL, @paymentType, @contract, @quantity);
 
 
         SET @sellerPercentage = (SELECT participantPercentage FROM contractParticipants
@@ -282,7 +321,7 @@ BEGIN
             WHERE contractParticipants.contractId = @contract AND 
                 contractParticipants.participantId = @seller);
 
-        -- Update seller''s balance
+        -- Update seller's balance
         UPDATE participants
             SET participants.balance = participants.balance + @totalPrice * (@sellerPercentage/100)
             where participants.participantId = @seller;
@@ -300,8 +339,8 @@ BEGIN
             INNER JOIN contractCollectors ON contracts.contractId = contractCollectors.contractId
             INNER JOIN collectors ON contractCollectors.collectorId = collectors.collectorId
             WHERE contracts.contractId = @contract;
+		END;
     END;
-END;
 """
 execProc = """
     exec registerSales @client =1,
@@ -309,12 +348,14 @@ execProc = """
         @seller =1,
         @totalPrice = ?,
         @paymentType = 1,
-        @contract =1;
+        @contract =1,
+        @quantity = ?;
 """
 
+# print("1")
 # Create Procedure To Register Sales
 executeQuery(connection, procedure, [], 1)
-
+# print("2")
 # Select Products for the app
 queryProducts = "SELECT * FROM products"
 products = executeQuery(connection, queryProducts, [], 0)
